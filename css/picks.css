@@ -377,7 +377,7 @@ footer p { font-size: 14px; opacity: 0.4; font-weight: 400; text-transform: none
     gap: 12px;
 }
 
-.sound-toggle-btn, .search-trigger-btn {
+.search-trigger-btn {
     background: rgba(255, 255, 255, 0.7);
     border: 1px solid rgba(31, 31, 31, 0.15);
     border-radius: 50%;
@@ -393,7 +393,7 @@ footer p { font-size: 14px; opacity: 0.4; font-weight: 400; text-transform: none
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
-.sound-toggle-btn:hover, .search-trigger-btn:hover {
+.search-trigger-btn:hover {
     background: #ffffff;
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);

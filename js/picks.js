@@ -1,5 +1,4 @@
-let isFinalResultLocked = false; 
-const audioEffect = new Audio('https://myshaky.com/myimg/picks/ok-111.mp3');
+let isFinalResultLocked = false;
 
 let clubsData = [];
 let filteredClubs = [];
@@ -485,7 +484,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Hero Start -> Category Panels Transition
     startBtn.addEventListener('click', () => {
         startBtn.classList.add('active');
-        audioEffect.play().catch(() => {});
 
         setTimeout(() => {
             gsap.to(heroContentWrap, {
@@ -513,7 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 filteredClubs = clubsData.filter(c => c.category.toLowerCase() === category.toLowerCase());
             }
 
-            audioEffect.play().catch(() => {});
             state.isAnimating = true;
 
             gsap.to(introOverlay, {
@@ -623,9 +620,6 @@ document.addEventListener('DOMContentLoaded', () => {
         state.isAnimating = true;
         state.isRevealed = true;
         state.isInteractionEnabled = false;
-
-        audioEffect.currentTime = 0;
-        audioEffect.play().catch(() => {});
 
         const wheelCenterLogo = document.getElementById('wheel-center-logo');
         gsap.to([instructionText, wheelCenterLogo], { opacity: 0, duration: 0.4 });
@@ -801,19 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navDrawerOverlay = document.getElementById('nav-drawer-overlay');
     const drawerCloseBtn = document.getElementById('drawer-close-btn');
     
-    const soundToggleBtn = document.getElementById('sound-toggle-btn');
-    const soundIcon = document.getElementById('sound-icon');
-    let isSoundMuted = false;
 
-    if (soundToggleBtn) {
-        soundToggleBtn.addEventListener('click', () => {
-            isSoundMuted = !isSoundMuted;
-            audioEffect.muted = isSoundMuted;
-            if (soundIcon) {
-                soundIcon.className = isSoundMuted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
-            }
-        });
-    }
 
     function openDrawer() {
         if (navDrawerOverlay) navDrawerOverlay.classList.add('is-open');
