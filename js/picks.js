@@ -799,7 +799,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-  }
 
     if (resMainTitle) {
         resMainTitle.addEventListener('click', () => {
