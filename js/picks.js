@@ -449,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 x: baseX + s.currentX,
                 y: baseY + s.currentY,
                 rotationY: s.currentRotation,
+                rotationX: mouse.currentX * 0.35,
                 scale: s.currentScale,
                 rotation: (angle * 180 / Math.PI) + 90,
                 transformPerspective: 1000
@@ -460,9 +461,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!state.isInteractionEnabled || state.isExpanded) return;
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
-        mouse.targetY = ((e.clientX - cx) / cx) * 20;
-        mouse.targetX = -((e.clientY - cy) / cy) * 20;
+        mouse.targetY = ((e.clientX - cx) / cx) * 32;
+        mouse.targetX = -((e.clientY - cy) / cy) * 32;
     });
+
+    window.addEventListener('touchmove', (e) => {
+        if (!state.isInteractionEnabled || state.isExpanded || !e.touches[0]) return;
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        mouse.targetY = ((e.touches[0].clientX - cx) / cx) * 32;
+        mouse.targetX = -((e.touches[0].clientY - cy) / cy) * 32;
+    });
+
 
     // 3. Hero Entrance Animation
     function runHeroEntrance() {
