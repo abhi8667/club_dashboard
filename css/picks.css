@@ -780,14 +780,14 @@ footer p { font-size: 14px; opacity: 0.4; font-weight: 400; text-transform: none
     display: flex; 
     flex-direction: column; 
     align-items: center; 
-    padding: 80px 20px 50px; 
-    pointer-events: none; 
+    padding: 30px 20px 50px; 
+    pointer-events: auto; 
     z-index: 100; 
     opacity: 0; 
     visibility: hidden; 
     overflow-y: auto;
-    background: transparent !important;
-    backdrop-filter: none !important;
+    background: rgba(227, 238, 255, 0.92);
+    backdrop-filter: blur(18px);
 }
 
 .res-header { 
@@ -796,8 +796,7 @@ footer p { font-size: 14px; opacity: 0.4; font-weight: 400; text-transform: none
     justify-content: space-between;
     width: 100%;
     max-width: 760px;
-    margin-bottom: 8px;
-    pointer-events: auto;
+    margin-bottom: 12px;
 }
 
 .res-main-title { 
@@ -821,9 +820,8 @@ footer p { font-size: 14px; opacity: 0.4; font-weight: 400; text-transform: none
     align-items: center; 
     justify-content: center; 
     gap: 16px; 
-    margin-bottom: 240px; 
+    margin-bottom: 15px; 
     width: 100%; 
-    pointer-events: auto;
 }
 
 .nav-arrow { 
@@ -861,22 +859,22 @@ footer p { font-size: 14px; opacity: 0.4; font-weight: 400; text-transform: none
 }
 
 .res-card-placeholder { 
-    display: none !important;
+    width: 170px; 
+    height: 170px; 
+    margin: 10px auto 20px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    flex-shrink: 0; 
 }
 
 .res-text-container { 
     width: 100% !important; 
-    max-width: 680px !important; 
+    max-width: 760px !important; 
     opacity: 1 !important; 
     pointer-events: auto !important; 
-    margin-top: 0 !important; 
+    margin-top: 10px !important; 
     display: block !important; 
-    background: rgba(255, 255, 255, 0.88) !important;
-    backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.6) !important;
-    border-radius: 24px !important;
-    padding: 24px 28px !important;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12) !important;
 } 
 
 .res-text { 
@@ -886,7 +884,6 @@ footer p { font-size: 14px; opacity: 0.4; font-weight: 400; text-transform: none
     color: #2d3748; 
     width: 100%; 
 }
-
 
 .title-container { display: none; } .word { display: inline-block; }
 /* --- Fix Menu: 寬度、字體與大寫修正 --- */
