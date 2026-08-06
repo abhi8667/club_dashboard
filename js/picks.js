@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 6. Select & Reveal Club Detail Page
+    // 6. Select & Reveal Club Detail Page (Luxury Modal with Logo on Top)
     function selectAndRevealClub(index, cardEl) {
         if (state.isAnimating) return;
         currentClubIndex = index;
@@ -649,7 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         gsap.to(gallery, {
             rotation: finalRot,
-            duration: 2.2,
+            duration: 2.0,
             ease: "power3.inOut",
             onComplete: () => {
                 state.galleryRotationOffset = finalRot;
@@ -663,11 +663,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     ease: "back.out(2)",
                     onComplete: () => {
                         populateClubDetail(club);
-                        
-                        resCardTarget.innerHTML = `<div class="card-inner" style="width:100%; height:100%; border-radius:12px; background:#fff; border:2px solid rgba(255,255,255,0.9); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.2); padding:6px;">${renderClubLogoImg(club, 'width:100%; height:100%; object-fit:contain;')}</div>`;
-
                         resultLayout.style.display = 'flex';
-                        gsap.fromTo(resultLayout, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, visibility: 'visible', duration: 0.6, ease: "power2.out" });
+                        gsap.fromTo(resultLayout, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, visibility: 'visible', duration: 0.5, ease: "power2.out" });
                         
                         gsap.to(galleryContainer, { scale: 1, duration: 0.4 });
                         gsap.to(cardEl, { scale: 1, duration: 0.4 });
@@ -679,21 +676,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateClubDetail(club) {
-        document.getElementById('res-category-label').textContent = `${club.category.toUpperCase()} ｜`;
+        // Logo on top in squircle container
+        const squircle = document.getElementById('res-logo-squircle');
+        if (squircle) {
+            squircle.innerHTML = renderClubLogoImg(club, 'width:100%; height:100%; object-fit:contain;');
+        }
+
+        // Index counter e.g. "13 / 30"
+        const indexCounter = document.getElementById('card-index-counter');
+        if (indexCounter) {
+            const idxStr = String(currentClubIndex + 1).padStart(2, '0');
+            const totalStr = String(filteredClubs.length || 30).padStart(2, '0');
+            indexCounter.textContent = `${idxStr} / ${totalStr}`;
+        }
+
+        // Category Eyebrow & Title & Description
+        const eyebrow = document.getElementById('club-eyebrow-cat');
+        if (eyebrow) eyebrow.textContent = `${club.category.toUpperCase()} CLUB`;
+
         document.getElementById('club-title').textContent = club.club_name;
-        document.getElementById('club-tagline').textContent = club.tagline;
-        document.getElementById('club-category-badge').textContent = club.category;
-        document.getElementById('club-venue-badge').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${club.venue || 'RVCE Campus'}`;
         document.getElementById('club-description').textContent = club.description;
+
+        const venueBadge = document.getElementById('club-venue-badge');
+        if (venueBadge) venueBadge.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${club.venue || 'RVCE Campus'}`;
 
         // Events
         const eventsGrid = document.getElementById('events-grid');
         const eventsSec = document.getElementById('events-section');
+        const eventsCountLabel = document.getElementById('events-count-label');
         if (club.events && club.events.length > 0) {
+            if (eventsCountLabel) eventsCountLabel.textContent = `1 / ${club.events.length}`;
             eventsGrid.innerHTML = club.events.map(ev => `
-                <div class="event-card">
-                    <div class="event-title">${ev.title}</div>
-                    ${ev.desc ? `<div class="event-desc">${ev.desc}</div>` : ''}
+                <div class="event-card" style="display:flex; gap:14px; align-items:flex-start; margin-bottom:10px;">
+                    <div style="font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:800; color:#2563eb; width:55px; flex-shrink:0; text-transform:uppercase;">${ev.date || 'AUG 28'}</div>
+                    <div>
+                        <div style="font-weight:700; font-size:0.9rem; color:#0f172a; margin-bottom:2px;">${ev.title}</div>
+                        ${ev.desc ? `<div style="font-size:0.8rem; color:#64748b; line-height:1.4;">${ev.desc}</div>` : ''}
+                    </div>
                 </div>
             `).join('');
             eventsSec.style.display = 'block';
@@ -704,16 +723,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Gallery
         const galleryGrid = document.getElementById('club-gallery-grid');
         const gallerySec = document.getElementById('gallery-section');
+        const galleryDivider = document.getElementById('gallery-divider');
         if (club.gallery_folder) {
             let galleryHTML = '';
-            for (let i = 1; i <= 8; i++) {
+            for (let i = 1; i <= 4; i++) {
                 const imgPath = `assets/gallery/${club.gallery_folder}/${i}.jpg`;
                 galleryHTML += `<img class="gallery-img-thumb" src="${imgPath}" alt="${club.club_name} photo" loading="lazy" onerror="this.style.display='none'" />`;
             }
             galleryGrid.innerHTML = galleryHTML;
             gallerySec.style.display = 'block';
+            if (galleryDivider) galleryDivider.style.display = 'block';
         } else {
             gallerySec.style.display = 'none';
+            if (galleryDivider) galleryDivider.style.display = 'none';
         }
 
         // Socials
@@ -723,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (club.linkedin) socialsHTML += `<a class="social-pill" href="${club.linkedin}" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>`;
         if (club.website) socialsHTML += `<a class="social-pill" href="${club.website}" target="_blank"><i class="fa-solid fa-globe"></i> Website</a>`;
         if (club.contact_email) socialsHTML += `<a class="social-pill" href="mailto:${club.contact_email}"><i class="fa-solid fa-envelope"></i> Email</a>`;
-        socialsRow.innerHTML = socialsHTML || '<p style="opacity:0.6;">No social links available.</p>';
+        socialsRow.innerHTML = socialsHTML || '<p style="opacity:0.6; font-size:0.85rem;">No social links available.</p>';
     }
 
     // 7. Detail View Navigation
@@ -733,7 +755,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentClubIndex = (currentClubIndex - 1 + filteredClubs.length) % filteredClubs.length;
             const club = filteredClubs[currentClubIndex];
             populateClubDetail(club);
-            resCardTarget.innerHTML = `<div class="card-inner" style="width:100%; height:100%; border-radius:12px; background:#fff; border:2px solid rgba(255,255,255,0.9); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.2); padding:6px;">${renderClubLogoImg(club, 'width:100%; height:100%; object-fit:contain;')}</div>`;
         });
     }
 
@@ -743,14 +764,13 @@ document.addEventListener('DOMContentLoaded', () => {
             currentClubIndex = (currentClubIndex + 1) % filteredClubs.length;
             const club = filteredClubs[currentClubIndex];
             populateClubDetail(club);
-            resCardTarget.innerHTML = `<div class="card-inner" style="width:100%; height:100%; border-radius:12px; background:#fff; border:2px solid rgba(255,255,255,0.9); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.2); padding:6px;">${renderClubLogoImg(club, 'width:100%; height:100%; object-fit:contain;')}</div>`;
         });
     }
 
     if (resBackBtn) {
         resBackBtn.addEventListener('click', () => {
             gsap.to(resultLayout, {
-                opacity: 0, duration: 0.4, ease: "power2.in",
+                opacity: 0, scale: 0.95, duration: 0.35, ease: "power2.in",
                 onComplete: () => {
                     resultLayout.style.display = 'none';
                     instructionText.style.opacity = 1;
@@ -766,6 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
 
     if (resMainTitle) {
         resMainTitle.addEventListener('click', () => {

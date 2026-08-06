@@ -771,119 +771,229 @@ footer p { font-size: 14px; opacity: 0.4; font-weight: 400; text-transform: none
 
 
 
+/* ==========================================
+   LUXURY CLUB DETAIL MODAL CARD (EXACT SCREENSHOT)
+   ========================================== */
+
 .result-layout { 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    padding: 30px 20px 50px; 
-    pointer-events: auto; 
-    z-index: 100; 
+    position: fixed !important; 
+    top: 0 !important; 
+    left: 0 !important; 
+    width: 100vw !important; 
+    height: 100vh !important; 
+    display: flex !important; 
+    align-items: center !important; 
+    justify-content: center !important;
+    padding: 20px !important; 
+    pointer-events: auto !important; 
+    z-index: 3000 !important; 
     opacity: 0; 
     visibility: hidden; 
-    overflow-y: auto;
-    background: rgba(227, 238, 255, 0.92);
-    backdrop-filter: blur(18px);
+    background: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
 }
 
-.res-header { 
+.club-detail-card {
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    background: #ffffff;
+    border-radius: 32px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    scroll-behavior: smooth;
+}
+
+.card-modal-header {
+    background: #f5f4f0;
+    padding: 36px 24px 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: 1px solid #eae8e1;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: none;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #4a5568;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: #1a202c;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.card-logo-squircle {
+    width: 90px;
+    height: 90px;
+    border-radius: 26px;
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    margin-bottom: 16px;
+    border: 3px solid #ffffff;
+}
+
+.card-logo-squircle img {
     width: 100%;
-    max-width: 760px;
+    height: 100%;
+    object-fit: contain;
+}
+
+.card-index-counter {
+    align-self: flex-start;
+    font-family: 'Inter', monospace, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+}
+
+.card-modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.club-eyebrow-cat {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.club-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+    margin: 0 0 12px;
+    letter-spacing: -0.02em;
+}
+
+.club-description {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: #475569;
+    margin: 0;
+}
+
+.card-divider {
+    height: 1px;
+    background: #e2e8f0;
+    width: 100%;
+    margin: 4px 0;
+}
+
+.section-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     margin-bottom: 12px;
 }
 
-.res-main-title { 
-    font-family: 'Playfair Display', serif; 
-    font-size: 2.2rem; 
-    font-weight: 400; 
-    font-style: italic; 
-    color: #1f1f1f; 
-    margin: 0; 
-    cursor: pointer; 
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+.section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
 }
 
-.res-main-title:hover {
-    opacity: 1; 
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+.events-count-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 600;
 }
 
-.res-nav-row { 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    gap: 16px; 
-    margin-bottom: 15px; 
-    width: 100%; 
+.club-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
 }
 
-.nav-arrow { 
-    background: rgba(255, 255, 255, 0.7); 
-    border: 1px solid rgba(31, 31, 31, 0.15); 
-    border-radius: 50%; 
-    width: 42px; 
-    height: 42px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    font-family: 'Playfair Display', serif; 
-    font-size: 1.2rem; 
-    cursor: pointer; 
-    color: #1f1f1f; 
-    padding: 0; 
-    transition: all 0.2s; 
-    pointer-events: auto; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+.gallery-img-thumb {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.nav-arrow:hover { 
-    transform: translateY(-2px) scale(1.08); 
-    background: #ffffff; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12); 
+.card-modal-footer {
+    padding: 16px 24px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #f1f5f9;
+    background: #ffffff;
 }
 
-.res-category { 
-    font-family: 'Playfair Display', serif; 
-    font-size: 1.4rem; 
-    font-weight: 600; 
-    font-style: italic; 
-    color: #1f1f1f; 
-    letter-spacing: 0.05em; 
+.footer-nav-arrows {
+    display: flex;
+    gap: 10px;
 }
 
-.res-card-placeholder { 
-    width: 170px; 
-    height: 170px; 
-    margin: 10px auto 20px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    flex-shrink: 0; 
+.nav-circle-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #334155;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
 }
 
-.res-text-container { 
-    width: 100% !important; 
-    max-width: 760px !important; 
-    opacity: 1 !important; 
-    pointer-events: auto !important; 
-    margin-top: 10px !important; 
-    display: block !important; 
-} 
-
-.res-text { 
-    font-family: 'Inter', sans-serif; 
-    font-size: 0.95rem; 
-    line-height: 1.6; 
-    color: #2d3748; 
-    width: 100%; 
+.nav-circle-btn:hover {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
 }
+
+.footer-venue-tag {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
 
 .title-container { display: none; } .word { display: inline-block; }
 /* --- Fix Menu: 寬度、字體與大寫修正 --- */
