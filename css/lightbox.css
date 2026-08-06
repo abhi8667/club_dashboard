@@ -1,0 +1,338 @@
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.thumb-box {
+  width: calc(25% - 10px);
+  text-align: center;
+}
+.thumb-box img {
+  width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.thumb-box img:hover {
+  transform: scale(1.05);
+}
+.caption {
+  font-size: 0.9rem;
+  margin: 5px 0 15px;
+  color: #ffffff;
+}
+
+/* News Lightbox 專屬樣式 */
+#news-lightbox .news-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #111;
+    border-radius: 12px;
+    border: 1px solid #333;
+    width: 90%;
+    max-width: 1000px;
+    min-height: 65vh; 
+    max-height: 85vh;
+    overflow-y: auto;
+    z-index: 1001; 
+    color: #fff;
+    box-sizing: border-box;
+
+    /* 【關鍵修改 1】改成 Flex 排版並垂直置中，完美吸收下方多餘的空白 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    /* 【關鍵修改 2】上、右、下、左的內距 (上方加碼到 70px，讓標題遠離邊緣) */
+    padding: 70px 40px 40px 40px; 
+}
+
+#news-lightbox .close {
+    position: absolute;
+    top: -10px;
+    right: 0;
+    font-size: 24px;
+    cursor: pointer;
+    color: #fff;
+    transition: 0.3s;
+}
+
+#news-lightbox .close:hover {
+    color: #ff8fdd;
+}
+
+/* 🚫 完全隱藏 Lightbox 捲軸，但保留滑鼠滾動功能 */
+#news-lightbox .news-content::-webkit-scrollbar {
+    display: none; /* 針對 Chrome, Safari, Edge */
+}
+#news-lightbox .news-content {
+    scrollbar-width: none; /* 針對 Firefox */
+    -ms-overflow-style: none; /* 針對 IE/Edge 舊版 */
+}
+
+/* 新增：讓圖片可以左右並排，且不會太大張 */
+#news-lightbox .news-gallery {
+    display: flex;
+    flex-wrap: wrap; /* 【關鍵新增】允許圖片在空間不夠時自動換行 */
+    justify-content: center;
+    align-items: flex-start;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+/* --- 1. 恢復原狀：拯救 CSSDA (4張圖) 的完美比例 --- */
+#news-lightbox .news-gallery img {
+    width: 23%;
+    max-width: 220px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* --- 2. 【全新魔法】當畫廊剛好只有「2張圖」(FWA) 時的專屬比例 (防外掛強效版) --- */
+@media (min-width: 769px) {
+    /* 左邊第 1 張 (直式證書)：保持精緻，不准變巨無霸 */
+    #news-lightbox .news-gallery img:first-of-type:nth-last-of-type(2) {
+        width: 29.4%;
+        max-width: 280px; 
+    }
+
+    /* 右邊第 2 張 (橫式遊戲截圖)：突破限制，霸氣放大！ */
+    #news-lightbox .news-gallery img:first-of-type:nth-last-of-type(2) ~ img {
+        width: 65%;
+        max-width: 650px; 
+    }
+}
+
+#news-lightbox .news-gallery img:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.8);
+}
+
+/* 【新增】專屬設定：當畫廊裡只有「1 張圖」(FWA) 時，強制縮小 */
+#news-lightbox .news-gallery img:only-of-type {
+    flex: 0 1 auto; 
+    max-width: 220px; 
+    max-height: 40vh; 
+}
+
+/* --- News Lightbox 官方按鈕樣式 --- */
+.news-link-wrapper {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.news-official-link {
+    display: inline-block;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 10px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+}
+
+.news-official-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #fff;
+    color: #fff;
+}
+
+@media (max-width: 1920px) {
+  .thumb {
+    min-width: 115px;
+  }
+}
+@media (max-width: 768px) {
+  .thumb-box {
+    width: calc(50% - 8px); /* 手機版：2張圖一排 */
+  }
+  .thumb {
+    min-width: 250px;
+  }
+}
+@media (max-width: 600px) {
+  .thumb-box {
+    width: calc(40% - 5px); /* 手機版：2張圖一排 */
+  }
+  .thumb {
+    min-width: 50%;
+  }
+}
+.lightbox {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2147483647 !important;
+}
+.lightbox.hidden { display: none; }
+.lightbox .overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+  z-index: 1;
+}
+.lightbox .content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  background: #545469;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+#lightbox-img {
+  max-width: 95vw;
+  max-height: 75vh;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  display: block;
+  margin: 0 auto;
+}
+#lightbox-caption {
+  /* background-color: rgba(0, 0, 0, 0.7); */
+  color: rgb(189, 189, 189);
+  margin-top: 10px;
+  padding: 15px 20px 0;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  display: inline-block;
+}
+.fa-btn {
+  position: absolute;
+  width: 48px; height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white; font-size: 2rem;
+  z-index: 3;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+}
+.lightbox:not(.hidden) .fa-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+.close { top: 20px; right: 30px; }
+.prev { top: 50%; left: 30px; transform: translateY(-50%); }
+.next { top: 50%; right: 30px; transform: translateY(-50%); }
+
+/* 手機版 News Lightbox 專屬設定 */
+@media (max-width: 768px) {
+    #news-lightbox .news-content {
+        padding: 65px 15px 20px 15px; 
+        min-height: auto; 
+    }
+
+    #news-lightbox .news-content h2 {
+        font-size: 1.15rem !important;
+        margin-bottom: 5px;
+    }
+
+    /* 【關鍵修正】調整手機版 X 的位置，給它一點呼吸空間 */
+    #news-lightbox .close {
+        top: 10px;
+        right: 15px;
+        font-size: 22px; 
+    }
+
+@media (max-width: 768px) {
+    #news-lightbox .news-content {
+        padding: 65px 15px 20px 15px; 
+        min-height: auto; 
+        justify-content: flex-start; /* ✨ 關鍵解藥：改為從頂部往下排，不要強制置中擠壓了！ */
+    }
+
+    #news-lightbox .news-content h2 {
+        font-size: 1.15rem !important;
+        margin-bottom: 5px;
+    }
+
+    /* --- 1. CSSDA (4張圖) 嚴格 2x2 網格 --- */
+    #news-lightbox .news-gallery img {
+        width: 31%; 
+        max-width: 150px; /* ✨ 大幅壓低天花板！從 240px 降到 150px，確保 4 張圖精緻不塞爆 */
+        height: auto;
+        max-height: none; 
+        object-fit: contain;
+        margin-bottom: 5px;
+    }
+
+    /* --- 2. FWA / CSS Winner (左右並排) --- */
+    
+    /* 左圖 (直式證書) */
+    #news-lightbox .news-gallery img:first-child:nth-last-child(2) {
+        width: 32%;       
+        max-width: 129px; /* ✨ 完美吻合你抓好的 145px */
+        height: auto;
+        max-height: none;
+        object-fit: contain;
+        margin-bottom: 0;
+    }
+
+    /* 右圖 (橫式截圖) */
+    #news-lightbox .news-gallery img:first-child:nth-last-child(2) ~ img {
+        width: 63%;       
+        max-width: 280px; /* ✨ 同步把右圖極限壓低 (原本360px太大了)，讓它跟 145px 的左圖更配 */
+        height: auto;
+        max-height: none;
+        object-fit: contain;
+    }
+}
+}
+
+@media (max-width: 500px) { 
+    #news-lightbox .news-gallery img:first-child:nth-last-child(2) {
+       width: 29%;
+    }  
+    #news-lightbox .news-gallery {
+       margin-top: 22px;
+    }
+    .news-link-wrapper {
+      margin-top: 20px;
+    }
+}
+
+
+/* Back to Awards 按鈕 (放在 Media Query 之外，讓它全域生效) */
+#back-to-awards {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    color: #dfc28c;
+    cursor: pointer;
+    transition: 0.3s;
+    display: none; 
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-family: 'Comfortaa', sans-serif;
+    z-index: 100;
+}
+#back-to-awards i { font-size: 24px; }
+#back-to-awards span { font-size: 15px; }
+#back-to-awards:hover { opacity: 0.7; }
+
+@media (max-width: 768px) {
+    #back-to-awards {
+        top: 12px;
+        left: 15px;
+    }
+}
+
+/* 當彈出視窗顯示時，用這個 class 鎖定背景，防止滑鼠穿透與觸發聲音 */
+.no-pointer-events {
+    pointer-events: none !important;
+}
+

@@ -1,0 +1,2191 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+* { box-sizing: border-box; }
+
+/* 修改 BODY：維持亮色系 */
+body { 
+    background-color: #E3EEFF; 
+    margin: 0; 
+    overflow: hidden; 
+    font-family: 'Inter', sans-serif; 
+    user-select: none; 
+    cursor: default; 
+    transition: none; 
+}
+
+/* --- 動態光暈背景特效 (鮮艷通透・色彩回歸版) --- */
+
+.ambient-glow-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: -1; 
+    overflow: hidden;
+    background: radial-gradient(circle at center, #d6e7ff 50%, #d6e7ff 80%);
+}
+
+/* 直接加在最外層背景容器，產生穩定的中心擴散白光 */
+.ambient-glow-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 600px;
+    height: 600px;
+    /* 確保在正中心 */
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    /* 白色 10% 擴散效果 */
+    background: radial-gradient(
+        circle at center, 
+        rgba(255, 255, 255, 0.6) 100%,   /* 中心白色 */
+        rgba(255, 255, 255, 0.05) 150%, 
+        transparent 200%                /* 向外擴散至透明 */
+    );
+    /* 額外加上濾鏡讓邊緣更柔和，不干擾上方的色彩 blob */
+    filter: blur(50px);
+    z-index: 0; 
+    pointer-events: none;
+}
+
+.glow-spinner {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 120vmax;
+    height: 120vmax;
+    transform: translate3d(-50%, -50%, 0);
+    animation: rotate-gradient 20s linear infinite; 
+    z-index: 1;
+    filter: blur(60px); /* 稍微降低模糊，讓顏色更紮實一點點 */
+    will-change: transform;
+    filter: blur(90px);
+}
+
+.glow-blob {
+    position: absolute;
+    top: 50%; left: 50%;
+    border-radius: 50%;
+    opacity: 0.6; /* 稍微提高基礎透明度 */
+    /* [新增]：這是質感的關鍵，讓顏色與底色融合產生亮部 */
+    mix-blend-mode: color-dodge; 
+    filter: blur(40px); /* 保持適度模糊 */
+}
+
+/* --- 修改後的動態光暈背景 (披薩分佈版) --- */
+
+/* 1. 藍色：移向左側 */
+.blob-blue {
+    width: 80%; height: 80%; /* 統一調大，增加重疊層次感 */
+    transform: translate3d(-80%, -40%, 0); 
+    background: radial-gradient(
+        circle at center, 
+        #AECBFA 20%,          
+        rgba(174, 203, 250, 0.4) 50%, 
+        transparent 90%       
+    );
+    opacity: 0.5;
+}
+
+/* 2. 紅色：移向右上方 */
+.blob-red {
+    width: 80%; 
+    height: 80%;
+    /* 往右上方偏移，與藍色、黃色拉開距離 */
+    transform: translate3d(0%, -70%, 0); 
+    background: radial-gradient(
+        circle at center, 
+        #F28B82 20%,           
+        rgba(242, 139, 130, 0.4) 50%, 
+        transparent 85%
+    );
+    opacity: 0.35;             
+    z-index: 2;                
+}
+
+/* 3. 黃色：移向右下方 */
+.blob-yellow {
+    width: 80%; 
+    height: 80%;
+    /* 往右下方偏移，形成三角鼎立 */
+    transform: translate3d(0%, -15%, 0); 
+    background: radial-gradient(
+        circle at center, 
+        #FDD663 20%, 
+        rgba(253, 214, 99, 0.4) 50%, 
+        transparent 85%
+    );
+    opacity: 0.35;             
+    z-index: 3;                
+}
+
+@keyframes rotate-gradient {
+    0% { transform: translate3d(-50%, -50%, 0) rotate(0deg); }
+    100% { transform: translate3d(-50%, -50%, 0) rotate(360deg); }
+}
+
+/* --- 動態光暈背景特效 End --- */
+
+nav, footer { position: absolute; left: 0; width: 100%; padding: 2em 3em; display: flex; justify-content: space-between; align-items: center; z-index: 10; pointer-events: none; }
+nav a, nav p, footer p { color: rgba(31, 31, 31, 0.7); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; pointer-events: auto; text-decoration: none; }
+nav { top: 0; } 
+
+footer { bottom: 0; justify-content: center; padding-bottom: 20px; }
+footer p { font-size: 14px; opacity: 0.4; font-weight: 400; text-transform: none; }
+
+.container { position: relative; width: 100vw; height: 100vh; overflow: hidden; perspective: 5000px; }
+
+.gallery-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; transform-style: preserve-3d; pointer-events: none; }
+.gallery { position: relative; width: 0; height: 0; transform-style: preserve-3d; }
+
+/* CARD STYLES */
+.card { 
+    position: absolute; top: -30px; left: -22px; width: 45px; height: 60px; 
+    background: transparent; overflow: visible; cursor: pointer; backface-visibility: visible; 
+    transform-style: preserve-3d; pointer-events: auto; transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s; z-index: 200; 
+}
+
+.card-inner {
+    position: relative; width: 100%; height: 100%; background: transparent; border-radius: 4px; overflow: hidden;   
+    border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: box-shadow 0.5s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.5s ease, transform 0.2s ease; /*transform: translateZ(0); will-change: transform; */
+}
+
+.card-inner.style-super-lucky { border-color: #FFD700 !important; background: rgba(255, 215, 0, 0.1); }
+.card-inner.style-good-vibes { border-color: #FF9EAA !important; background: rgba(255, 158, 170, 0.1); }
+.card-inner.style-gentle-reminder { border-color: #A0C4FF !important; filter: grayscale(0.5); }
+.card-inner.style-shaky-chaos { border-color: #33FF00 !important; }
+
+.card img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    opacity: 1; 
+
+    /* 【修正 1】這裡加回 0.85，讓它一開始變暗 */
+    filter: brightness(0.85); 
+
+    transition: opacity 0.3s, filter 0.4s ease; 
+    pointer-events: none; 
+    
+    /* 保持 visible 以獲得最佳畫質 */
+    backface-visibility: visible !important; 
+    image-rendering: auto; 
+    
+    /* --- 超級採樣設定 --- */
+    
+    /* 放大 10 倍 */
+    width: 1000% !important;
+    height: 1000% !important;
+    
+    /* 【修正 2】合併 transform，縮小回 0.1 並強制 GPU 運算 */
+    transform: scale(0.1) translateZ(0); 
+    
+    /* 設定縮放基準點 */
+    transform-origin: top left;
+}
+.card:hover .card-inner img { filter: brightness(1.0); }
+.card:hover .card-inner { box-shadow: 0 8px 25px rgba(0,0,0,0.30); border-color: rgba(255, 255, 255, 0.8); }
+.card.is-active .card-inner img { filter: brightness(0.85) !important; }
+
+.card.card-selected .card-inner img { filter: brightness(0.85) !important; 
+    transition: filter 0.3s ease !important; }
+.card.card-selected:hover .card-inner img { filter: brightness(1.05) saturate(1.1) !important; }
+.card.card-selected:hover .card-inner { border-color: rgba(255, 255, 255, 1.0) !important; }
+
+
+.card.card-selected.is-revealed .card-inner { border-color: rgba(255, 255, 255, 1.0) !important; transform: scale(1.0) !important; background: transparent !important; }
+.card.card-selected.is-revealed .card-inner img { filter: brightness(1.05) saturate(1.1) !important; }
+
+.card.card-selected .card-inner::before {
+    content: ''; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-30deg); z-index: 10; pointer-events: none; animation: sharpFlash 2.5s infinite; 
+}
+
+.card-badge {
+    position: absolute; bottom: -5px; right: -5px; font-size: 8px; z-index: 300;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2)); opacity: 0; transform: scale(0); pointer-events: none;
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(2px); width: 14px; height: 14px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.6); 
+    
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    
+    /* 【修正】增加底部內距，把 Emoji 往上頂 */
+    padding: 2px 0 0 0; 
+    
+    /* 確保行高歸零，避免字型預設高度干擾 */
+    line-height: 0; 
+}
+
+.card-inner.style-gentle-reminder { filter: saturate(0.8) brightness(0.85) !important; }
+.card.card-selected:hover .card-inner.style-gentle-reminder,
+.card.card-selected.is-revealed .card-inner.style-gentle-reminder { filter: saturate(0.8) brightness(1.0) !important; }
+
+@keyframes sharpFlash {
+    0% { left: -150%; opacity: 0; } 30% { opacity: 0.9; } 60% { left: 200%; opacity: 0; } 100% { left: 200%; opacity: 0; }
+}
+
+/* ==========================================
+   3D DOUBLE-SIDED CARD FACES & HOVER TOOLTIP
+   ========================================== */
+
+.card-inner {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform-style: preserve-3d !important;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    background: transparent !important;
+}
+
+.card-face {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 6px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-face-front {
+    background: #ffffff !important;
+    border: 2px solid rgba(255, 255, 255, 0.9) !important;
+    transform: rotateY(0deg) !important;
+}
+
+.card-face-back {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+    border: 2px solid rgba(255, 255, 255, 0.85) !important;
+    transform: rotateY(180deg) !important;
+    color: #ffffff !important;
+    text-align: center !important;
+    padding: 8px 6px !important;
+    overflow: hidden !important;
+}
+
+.card-back-name {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    color: #ffffff !important;
+    margin-top: 4px !important;
+    word-break: break-word !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important;
+}
+
+.hover-club-tooltip {
+    position: fixed;
+    z-index: 9999;
+    padding: 8px 20px;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 30px;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -140%) scale(0.9);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    white-space: nowrap;
+}
+
+.hover-club-tooltip.is-active {
+    opacity: 1;
+    transform: translate(-50%, -150%) scale(1);
+}
+
+/* ==========================================
+   PRODUCTION HEADER & NAVIGATION DRAWER
+   ========================================== */
+
+.app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 12px 24px;
+    background: rgba(227, 238, 255, 0.75);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.brand-logo-wrap {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-rvce-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.brand-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    font-style: italic;
+    color: #1f1f1f;
+    letter-spacing: 0.02em;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sound-toggle-btn, .search-trigger-btn {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(31, 31, 31, 0.15);
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #1f1f1f;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.sound-toggle-btn:hover, .search-trigger-btn:hover {
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.hamburger-btn {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(31, 31, 31, 0.15);
+    border-radius: 12px;
+    width: 40px;
+    height: 38px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+}
+
+.hamburger-bar {
+    width: 18px;
+    height: 2px;
+    background-color: #1f1f1f;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-btn:hover {
+    background: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* Navigation Drawer */
+.nav-drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.nav-drawer-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.nav-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 320px;
+    max-width: 85vw;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+    padding: 30px 24px;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-drawer-overlay.is-open .nav-drawer {
+    transform: translateX(0);
+}
+
+.drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.drawer-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    font-style: italic;
+    color: #1f1f1f;
+    display: block;
+}
+
+.drawer-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.drawer-close-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #1f1f1f;
+    transition: background 0.2s ease;
+}
+
+.drawer-close-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.drawer-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.drawer-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: #334155;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.drawer-link i {
+    width: 20px;
+    color: #2563eb;
+    font-size: 1.05rem;
+}
+
+.drawer-link:hover {
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563eb;
+    transform: translateX(4px);
+}
+
+.drawer-footer {
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.drawer-subtext {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* Instant Search Modal */
+.search-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(10px);
+    z-index: 2500;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    display: flex;
+    justify-content: center;
+    padding-top: 12vh;
+}
+
+.search-modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.search-modal {
+    width: 90%;
+    max-width: 600px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(-20px);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.search-modal-overlay.is-open .search-modal {
+    transform: translateY(0);
+}
+
+.search-input-wrap {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    gap: 12px;
+}
+
+.search-input-icon {
+    font-size: 1.2rem;
+    color: #64748b;
+}
+
+#club-search-input {
+    border: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.05rem;
+    width: 100%;
+    color: #1e293b;
+    background: transparent;
+}
+
+.search-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.search-results-list {
+    overflow-y: auto;
+    padding: 12px;
+    max-height: 50vh;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.search-result-item:hover {
+    background: #f1f5f9;
+}
+
+.search-result-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #0f172a;
+}
+
+.search-result-cat {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+/* PERMANENT INSTRUCTION TEXT FIX (NO OVERLAP EVER) */
+.instruction-text {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 35px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    color: #4a5568 !important;
+    opacity: 0;
+    pointer-events: none !important;
+    letter-spacing: 0.14em !important;
+    text-transform: uppercase !important;
+    z-index: 25 !important;
+    text-align: center !important;
+    width: 90% !important;
+    transition: opacity 0.6s ease !important;
+}
+
+
+
+/* UI STYLES */
+.intro-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 50; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 0 20px; }
+.main-title { font-family: 'Playfair Display', serif; font-size: 3.5vw; font-weight: 400; font-style: italic; color: #1f1f1f; margin: 0; line-height: 1.2; letter-spacing: -0.02em; opacity: 0; text-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 100%; min-height: 1.2em; pointer-events: none; }
+/* 🌟 解決 SplitText 波浪動畫的字體邊緣抖動與閃爍 */
+.char {
+    will-change: transform, opacity, filter;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+}
+
+.start-btn {
+    margin-top: 2rem; padding: 10px 36px; background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(31, 31, 31, 0.3); 
+    color: #1f1f1f; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; 
+    letter-spacing: 0.15em; cursor: pointer; opacity: 0; position: relative; overflow: hidden; border-radius: 50px; 
+     pointer-events: auto; /*box-shadow: 0 4px 0 rgba(31, 31, 31, 0.1);*/ transition: all 0.25s ease; backdrop-filter: blur(5px); 
+}
+.start-btn:hover { background: #1f1f1f; color: #fff; transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0, 0, 0, 0.288); }
+/* 修改這段：讓按鈕按下去時「發光變白」，回饋感更強 */
+.start-btn:active, .start-btn.active { 
+    transform: translateY(2px) scale(0.95); /* 稍微下沉縮小 */
+    background: #cfcfcf !important;         /* 背景變全白 */
+    color: #000000 !important;              /* 文字變全黑 */
+    border-color: #ffffff !important;       /* 邊框變白 */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); /* 強烈發光 */
+    transition: all 0.1s ease-out;         /* 極快反應 */
+}
+
+.menu-area { position: relative; width: 100%; height: 220px; margin-top: 2rem; display: none; justify-content: center; pointer-events: none; }
+.options-container { position: absolute; top: 0; width: 100%; display: flex; flex-direction: column; gap: 15px; align-items: center; opacity: 0; display: none; pointer-events: none; }
+.split-container { position: absolute; top: 0; width: 100%; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 40px; opacity: 0; display: none; pointer-events: none; }
+.active-category-label { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-style: italic; color: #1f1f1f; border-right: 1px solid rgba(31, 31, 31, 0.2); padding-right: 40px; text-transform: uppercase; letter-spacing: 0.05em; text-align: right; min-width: 150px; }
+.sub-options-list { display: flex; flex-direction: column; gap: 15px; align-items: flex-start; }
+
+.option-btn { padding: 12px 0; width: 180px; border-radius: 50px; border: 1.5px solid transparent; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; color: #1f1f1f; pointer-events: auto; text-align: center; position: relative; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08); transition: all 0.2s; }
+.option-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 10px rgba(0, 0, 0, 0.12); filter: brightness(1.02); }
+.option-btn.active { transform: scale(0.96); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15); pointer-events: none; color: #ffffff !important; border-color: transparent !important; }
+
+.btn-luck, .btn-luck-sub { background-color: #FFF5BA; border-color: #cec071; color: #5d5035; }
+.btn-love { background-color: #FFCCD5; border-color: #e8b3bc; color: #6d3b45; }
+.btn-career { background-color: #C4E3FF; border-color: #abc9e3; color: #3b506d; }
+.btn-luck.active, .btn-luck-sub.active { background-color: #d4bf4e !important; color: #ffffff !important; }
+.btn-love.active { background-color: #d18c9a !important; color: #ffffff !important; }
+.btn-career.active { background-color: #7a9cb8 !important; color: #ffffff !important; }
+
+.instruction-text { 
+    position: absolute !important; 
+    top: auto !important;
+    bottom: 60px !important; 
+    left: 50% !important; 
+    transform: translateX(-50%) !important; 
+    font-family: 'Inter', sans-serif !important; 
+    font-size: 0.88rem !important; 
+    font-weight: 700 !important; 
+    color: #4a5568 !important; 
+    opacity: 0; 
+    pointer-events: none !important; 
+    letter-spacing: 0.15em !important; 
+    text-transform: uppercase !important; 
+    z-index: 25 !important; 
+    text-align: center !important; 
+    width: 90% !important; 
+    transition: opacity 0.6s ease !important;
+}
+
+.wheel-center-logo {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 5 !important;
+    pointer-events: none !important;
+    opacity: 0;
+    transition: opacity 0.6s ease, transform 0.6s ease !important;
+    filter: drop-shadow(0 8px 25px rgba(0, 0, 0, 0.12)) !important;
+}
+
+.wheel-center-logo.is-visible {
+    opacity: 1 !important;
+}
+
+
+
+.result-layout { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding: 30px 20px 50px; 
+    pointer-events: auto; 
+    z-index: 100; 
+    opacity: 0; 
+    visibility: hidden; 
+    overflow-y: auto;
+    background: rgba(227, 238, 255, 0.92);
+    backdrop-filter: blur(18px);
+}
+
+.res-header { 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 760px;
+    margin-bottom: 12px;
+}
+
+.res-main-title { 
+    font-family: 'Playfair Display', serif; 
+    font-size: 2.2rem; 
+    font-weight: 400; 
+    font-style: italic; 
+    color: #1f1f1f; 
+    margin: 0; 
+    cursor: pointer; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.res-main-title:hover {
+    opacity: 1; 
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+}
+
+.res-nav-row { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 16px; 
+    margin-bottom: 15px; 
+    width: 100%; 
+}
+
+.nav-arrow { 
+    background: rgba(255, 255, 255, 0.7); 
+    border: 1px solid rgba(31, 31, 31, 0.15); 
+    border-radius: 50%; 
+    width: 42px; 
+    height: 42px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-family: 'Playfair Display', serif; 
+    font-size: 1.2rem; 
+    cursor: pointer; 
+    color: #1f1f1f; 
+    padding: 0; 
+    transition: all 0.2s; 
+    pointer-events: auto; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+}
+
+.nav-arrow:hover { 
+    transform: translateY(-2px) scale(1.08); 
+    background: #ffffff; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12); 
+}
+
+.res-category { 
+    font-family: 'Playfair Display', serif; 
+    font-size: 1.4rem; 
+    font-weight: 600; 
+    font-style: italic; 
+    color: #1f1f1f; 
+    letter-spacing: 0.05em; 
+}
+
+.res-card-placeholder { 
+    width: 170px; 
+    height: 170px; 
+    margin: 10px auto 20px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    flex-shrink: 0; 
+}
+
+.res-text-container { 
+    width: 100% !important; 
+    max-width: 760px !important; 
+    opacity: 1 !important; 
+    pointer-events: auto !important; 
+    margin-top: 10px !important; 
+    display: block !important; 
+} 
+
+.res-text { 
+    font-family: 'Inter', sans-serif; 
+    font-size: 0.95rem; 
+    line-height: 1.6; 
+    color: #2d3748; 
+    width: 100%; 
+}
+
+.title-container { display: none; } .word { display: inline-block; }
+/* --- Fix Menu: 寬度、字體與大寫修正 --- */
+
+/* --- Menu Fix: 去除粗體 + 文字折行 --- */
+
+/* 1. 外框容器設定-因為menu區塊和文字跑掉 */
+.menu {
+    /* 定位：保持固定 */
+    position: fixed !important; 
+    top: 60px !important;
+    right: 40px !important; 
+    left: auto !important; 
+    /* 建議設為固定值 (如 180px)，這樣太長就會自動換行 */
+    width: 115px !important; 
+    /* 恢復原本的計算方式 */
+    box-sizing: content-box !important; 
+    z-index: 10000 !important;
+    font-family: Arial, sans-serif !important;
+    /* [修正] 確保容器內的文字規則允許換行 */
+    white-space: normal !important;
+}
+/* 2. 內部連結與文字設定 */
+.menu ul li a, .menu a {
+    /* [修正 1] 去除粗體：改回正常粗細 */
+    font-weight: normal !important; 
+    /* [修正 2] 讓文字折行 */
+    /* 允許文字換行，並增加一點行高讓折行後不擁擠 */
+    white-space: normal !important; 
+    line-height: 1.1 !important;
+    display: block !important; /* 確保它是區塊元素，換行才會生效 */
+    /* 其他還原設定 (去除大寫、還原字體) */
+    text-transform: none !important; 
+    font-family: Arial, sans-serif !important; 
+    font-size: 16px !important; 
+}
+
+@media (max-width: 768px) {
+    .start-btn {
+        padding: 14px 36px !important;
+        font-size: 14px !important;
+    }
+    .main-title { font-size: 6.5vw; }
+    .menu-area { height: auto; min-height: 250px; }
+    /* 1. 將 .options-container (主選單) 與 .split-container (子選單) 的設定分開 */
+    
+    /* 主選單 (Luck/Love/Career) 維持直向堆疊 */
+    .options-container { 
+        position: relative; 
+        flex-direction: column; 
+        gap: 20px; 
+    }
+
+    /* [關鍵修改] 子選單容器：改成 "row" (左右排列)，跟 PC 一樣 */
+    .split-container { 
+        position: relative; 
+        flex-direction: row;       /* <--- 改回 row */
+        gap: 20px; 
+        align-items: center;       /* 垂直置中 */
+        justify-content: center;   /* 水平置中 */
+        top: -40px;
+    }
+
+    /* [關鍵修改] 左邊的分類標籤 (例如 LUCK | ) */
+    /* 改回 PC 樣式：右邊有線、下方無線、文字靠右 */
+    .active-category-label { 
+        border-right: 1px solid rgba(31, 31, 31, 0.2); /* 加回右邊分隔線 */
+        border-bottom: none;                           /* 移除下方分隔線 */
+        padding-right: 25px;                           /* 右邊留白 */
+        padding-bottom: 0;                             /* 移除下方留白 */
+        text-align: right;                             /* 文字靠右對齊分隔線 */
+        min-width: auto; 
+    }
+
+    /* 右邊的按鈕群組：靠左對齊分隔線 */
+    .sub-options-list { 
+        align-items: flex-start; /* 改回靠左 */
+    }
+    .res-nav-row { 
+        display: flex !important;
+        flex-direction: row !important; /* 水平排列 */
+        flex-wrap: nowrap !important;   /* 強制不換行 (一條線) */
+        align-items: center !important; /* 垂直置中 */
+        justify-content: center !important; /* 整體居中 (跟電腦版一樣) */
+        width: 100%;
+        padding: 0 5px;       /* 左右留一點點邊距 */
+        margin-bottom: 15px;
+        gap: 6px;             /* 電腦版 Gap 很大，手機版改小 */
+    }
+
+    /* 1. 左右箭頭：重置順序，跟隨 HTML 原始流 */
+    .nav-arrow { 
+        order: unset !important;  /* [關鍵] 拿掉手機版的順序重排 */
+        width: 28px !important;   /* 尺寸縮小 */
+        height: 28px !important;
+        font-size: 14px !important;
+        flex-shrink: 0 !important; /* 禁止被壓縮 */
+        margin: 0 10px !important;
+    }
+
+    /* 確保箭頭沒有被之前的設定影響位置 */
+    #prev-cat-btn, #next-cat-btn {
+        position: static !important; /* 拿掉 relative/absolute */
+    }
+
+    /* 2. 中間標題 (LUCK | )：跟在左箭頭後面 */
+    .res-category { 
+        order: unset !important; /* [關鍵] 拿掉順序重排 */
+        width: auto !important;  /* 自動寬度 */
+        font-size: 18px !important; 
+        white-space: nowrap; 
+        margin: 0 !important;    /* 緊貼前後元件 */
+        flex-shrink: 0;          /* 不要被壓扁 */
+        text-align: right;       /* 文字靠右 (靠近分隔線) */
+        padding-right: 4px;      /* 與按鈕保持距離 */
+    } 
+
+    /* 3. 按鈕群組：跟在標題後面 */
+    .res-btn-group { 
+        order: unset !important; /* [關鍵] 拿掉順序重排 */
+        display: flex;
+        flex-wrap: nowrap !important;
+        gap: 8px;                /* 按鈕之間的間距 */
+        flex: 0 1 auto;          /* 允許縮小，但盡量保持內容寬度 */
+        justify-content: center;
+        margin: 0 !important;
+        min-width: 0;            /* 關鍵：防止內容溢出 */
+    }
+
+    /* 4. 按鈕本體：縮小版 (為了塞進同一行) */
+    .res-btn-group .option-btn {
+        width: auto !important;        /* [關鍵] 覆蓋電腦版的固定寬度 */
+        padding: 4px 20px !important;   /* 內距縮小 */
+        font-size: 11px !important;    /* 字體縮小 */
+        height: 28px !important;       /* 高度跟箭頭一致 */
+        line-height: 1 !important;
+        
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        
+        flex: 0 0 auto !important;     /* 不要自動變寬，依照文字長度 */
+        white-space: nowrap !important;
+        margin: 0 !important;
+    }
+
+    /* 調整下方文字容器，避免被按鈕擋住 */
+    .res-text-container { 
+        width: 100%; 
+        padding: 20px; 
+        margin-top: 85px !important; /* 確保與按鈕有距離 */
+    } 
+
+    .res-card-placeholder { 
+        width: 180px; 
+        height: 180px; 
+    }
+}
+@media (max-width: 430px) {
+    /* 1. 基礎容器設定 */
+    .container { height: 100vh !important; height: 100dvh !important; }
+    nav, footer { padding: 1.5em; } 
+    .main-title { font-size: 2.5rem; } 
+    .card { width: 30px; height: 40px; top: -20px; left: -15px; } 
+    .res-main-title { font-size: 2.5rem; }
+    
+    /* 2. UI 元件位置調整 */
+    .intro-overlay { 
+        width: 100%; 
+        height: auto;
+        top: 58%;
+    }
+    .start-btn { 
+        margin-top: 1.5rem;
+        margin-bottom: 120px;
+        margin-left: auto; margin-right: auto;
+        display: block;
+    }
+    .menu-area { 
+        width: 100%; height: 180px; margin-top: 1rem; 
+    }
+    .options-container { gap: 10px; }
+    .split-container { top: -75px; gap: 10px; }
+    .active-category-label { font-size: 1.1rem; padding-right: 10px; }
+    .sub-options-list { gap: 6px; }
+    .option-btn { width: 130px; height: 34px !important; padding: 8px 0; font-size: 10px; }
+
+    /* 3. 結果頁導航列 (雙層佈局) */
+    .res-nav-row { 
+        display: flex !important;
+        flex-wrap: wrap !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100%;
+        gap: 0 !important;
+        margin-bottom: 15px !important; /* [修改] 這裡也統一改成 15px (原本 20px) */
+        flex-shrink: 0 !important;
+        scale: 0.95;
+    }
+    .nav-arrow { 
+        order: 1 !important; width: 32px !important; height: 32px !important; font-size: 16px !important; margin: 0 !important; flex-shrink: 0 !important;
+    }
+    .nav-arrow:last-of-type { order: 3 !important; }
+    .res-category { 
+        order: 2 !important; width: auto !important; font-size: 20px !important; border: none !important; padding: 0 15px !important; margin: 0 !important;
+    } 
+    #res-category-label::after {
+        content: "";     /* 清空內容 */
+        display: none;   /* 不顯示 */
+    }
+    .res-btn-group { 
+        order: 4 !important; flex-basis: 100% !important; width: 100% !important; display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 8px !important; margin-top: 5px !important;
+    }
+    .res-btn-group .option-btn {
+        width: auto !important; min-width: 80px; padding: 6px 10px !important; font-size: 12px !important; height: auto !important; margin: 0 !important;
+    }
+
+    /* 4. 結果頁佈局優化 */
+    .result-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        padding-top: 10px !important; /* 👉 把 4vh 改回 10px，讓上方按鈕歸位 */
+        padding-bottom: 20px !important;
+        height: 100vh !important;
+    }
+    .res-header {
+        flex-shrink: 0 !important; margin-bottom: 0 !important;
+    }
+
+    /* 圓形圖案 (彈性大小) */
+    .res-card-placeholder {
+        width: 180px !important; height: 180px !important;
+        max-height: 25vh !important; max-width: 25vh !important;
+        margin: 5px auto !important;
+        flex-shrink: 1 !important;
+    }
+
+    /* [關鍵] 文字區域與間距設定 */
+    .res-text-container {
+        flex-grow: 1 !important;
+        height: auto !important;
+        margin-top: 20px !important; /* 👉 把 4vh 改成 20px，完美的呼吸空間 */
+        width: 97%;
+        padding: 10px 10px 40px 10px !important; 
+        overflow-y: auto !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        flex-direction: column !important; 
+    }
+    
+        /* 2. 強制調低「文字與文字間」的高度 */
+        /* 使用更強的選擇器，針對該容器底下的 "所有" p 標籤與 .res-text */
+        .res-text-container > *, 
+        .res-text-container p, 
+        .res-text,
+        div.res-text {
+            /* 強制覆蓋 JS 的 25px 設定 */
+            margin-top: 0 !important;
+            line-height: 0.6 !important;
+        }
+
+        /* 確保最後一段不要有留白 */
+        .res-text-container > :last-child,
+        .res-text-container p:last-child {
+            margin-bottom: 0 !important;
+        }
+        .res-level-stars {
+        /* 原本 JS 寫死 20px，這裡用 !important 強制覆蓋為 10px 0 10px */
+        margin: 10px 0 10px !important; 
+        }
+        .card-badge {
+        padding: 0 2px !important; /* 上下 0 (不壓)，左右 2px */
+        padding-top: 0 !important; /* 強制歸零上方的推擠 */
+    }
+}
+@media (max-width: 360px) {
+    .container { height: 95vh !important; }
+    .intro-overlay { 
+        width: 100%; 
+        height: auto;
+        top: 59% !important;
+    }
+    .option-btn { width: 110px !important; height: 32px !important; }
+}
+/* --- Desktop Restore: 還原舊版電腦尺寸 --- */
+@media (min-width: 1024px) {
+    .card-badge {
+        padding: 0 !important;
+    }
+    /* 1. 還原標題大小 (舊檔案第 172 行: 3.5vw) */
+    .main-title { 
+        font-size: 5vw !important; 
+    }
+
+    /* 2. 還原按鈕大小 (舊檔案第 190 行: 寬180px, 字13px) */
+    .option-btn {
+        width: 180px !important;
+        font-size: 13px !important;
+        padding: 12px 0 !important;
+    }
+
+    /* 3. 還原開始按鈕 (舊檔案第 175 行) */
+    .start-btn {
+        padding: 14px 36px !important;
+        font-size: 14px !important;
+    }
+
+    /* 4. 還原紙牌大小 (舊檔案第 48 行: 45x60) */
+    /* 如果您覺得這個還是太小，可以把 45改70, 60改100 */
+    .card {
+        width: 54px !important;
+        height: 70px !important;
+        
+        /* 【關鍵】修正中心點：數值是寬高的一半 (負數) */
+        top: -35px !important;    /* 70的一半 */
+        left: -27px !important; /* 54的一半 */
+    }
+}
+@media (min-width: 1280px) {
+    .main-title { 
+        font-size: 3.5vw !important; 
+    }
+}
+/* 僅針對 1024px 到 1699px 寬度的螢幕進行微調 */
+@media (min-width: 1024px) and (max-width: 1699px) {
+    /* 1. 強制將答案文字容器往上拉 */
+    .res-text-container {
+        margin-top: 15px !important;  /* 原本是 100px，縮小間距讓文字上提 */
+        padding-top: 0 !important;
+        min-height: 120px !important; /* 稍微縮小最小高度限制 */
+    }
+
+    /* 2. 稍微縮小文字內容的間距，讓整體更緊湊 */
+    .res-text div[style*="margin-bottom: 20px"] {
+        margin-bottom: 10px !important; /* 縮小星星與標題間的距離 */
+    }
+    
+    .res-text div[style*="margin-bottom: 15px"] {
+        margin-bottom: 8px !important;  /* 縮小內文與底部標籤間的距離 */
+    }
+
+    /* 3. 確保底部 Emoji 標籤不會太佔空間 */
+    .res-text div[style*="padding-top: 20px"] {
+        padding-top: 10px !important;
+    }
+}
+/* --- 針對 1920 超高滿版的位置優化 --- */
+
+/* 🌟 條件：寬度大於 1700px「且」高度大於 92px (你的神準確界線) */
+@media (min-width: 1700px) and (min-height: 920px) {
+    
+    /* 1. 滿版專屬：因為 JS 把大圖往上拉了，這裡文字只要推 80px 就會跟著往上升 */
+    .res-text-container {
+        margin-top: 180px !important; 
+    }
+
+    /* 2. 維持你原本的設定 */
+    .res-text div[style*="margin-top:100px"] {
+        margin-top: 150px !important; 
+    }
+}
+
+/* 2. 針對 430px 以下手機螢幕：將文字往上提 */
+@media (max-width: 430px) {
+    /* 縮小間距，避免文字被推到螢幕底部 */
+    .res-text div[style*="margin-top:100px"] {
+        margin-top: 0 !important; 
+    }
+    
+    /* 確保容器本身沒有額外的頂部間距 */
+    .res-text-container {
+        margin-top: 0 !important;
+    }
+
+/* 🌟 補回：第一階段提示字的手機版字體縮小 */
+    .instruction-text { 
+        font-size: 0.8rem !important; 
+        letter-spacing: 0.15em; /* 稍微加一點字距會更有質感 */
+    }
+
+}
+
+/* 3. 針對您上次提到的 1024~1600 中型螢幕 (保持之前的修正) */
+@media (min-width: 1024px) and (max-width: 1699px) {
+    .res-text div[style*="margin-top:100px"] {
+        margin-top: 40px !important; 
+    }
+}
+
+/* --- 🎯 微米級精準鎖定：只抓 375x667，絕對放過 S23 Ultra --- */
+@media screen and (min-width: 374px) and (max-width: 376px) and (max-height: 700px) {
+    
+    /* 🌟 1. 解決版權文字飄浮 */
+    .container {
+        height: 100vh !important;
+        height: 100dvh !important;
+    }
+
+    /* 🌟 2. 微調首頁與選單高度 */
+    .intro-overlay {
+        top: 58.5% !important; 
+    }
+    
+    .start-btn {
+        margin-bottom: 80px !important; 
+    }
+
+    /* 🌟 4. 解決結果頁文字偏高：加大 margin-top，把整塊答案往下推，平衡底部留白 */
+    .res-text-container {
+        margin-top: 5px !important; 
+    }
+
+}
+
+/* --- 🎯 只針對開獎後的結果頁，完全不影響 Start 圓環 --- */
+@media screen and (min-width: 380px) and (max-width: 440px) and (min-height: 800px) {
+
+    /* 🌟 只有「結果頁」出現時，我們才調整位置 */
+    .result-layout {
+        /* 將結果頁的卡片區塊「整體」往下推，讓圖不要太貼近導覽列 */
+        padding-top: 20px !important; 
+    }
+    
+    .res-nav-row { margin-top: 10px !important; }
+
+    .res-btn-group {
+        margin-top: 20px !important; /* 數值加大，分得更開 */
+    }
+    
+}
+
+/* --- 🌟 最終定案：紙牌絕對靜止、ICON 專屬絲滑呼吸 --- */
+
+/* 1. 等待開獎：紙牌完全靜止，穩如泰山 */
+.card.is-active:not(.is-revealed):not(.is-exploding) .card-inner {
+    animation: none !important; /* 不呼吸 */
+    scale: 1;
+    transform: translateY(0px); /* 死守 0px 原點 */
+    transition: scale 0.15s ease-out, box-shadow 0.4s ease !important;
+}
+
+/* 2. 滑鼠滑過：純粹加深陰影，紙牌依舊不動 */
+.card.is-active:not(.is-revealed):hover .card-inner {
+    box-shadow: 0 15px 30px rgba(0,0,0,0.28) !important; 
+}
+
+/* 3. 按下瞬間：因為本來就沒在動，所以原地縮小絕對 100% 零跳動！ */
+.card.is-active:not(.is-exploding):not(.is-revealed):active .card-inner,
+.card.is-pressed .card-inner {
+    animation: none !important;            
+    transform: translateY(0px) !important; 
+    scale: 0.94 !important;                
+    transition: scale 0.05s ease-out !important; 
+}
+
+/* 確保舊設定不會來干擾 */
+.card.card-selected:active .card-inner {
+    transform: translateY(0px) !important; 
+}
+
+/* 4. 開獎爆發與展示：紙牌彈回原尺寸，並【持續鎖死在原點】，提供最高級的閱讀穩定感 */
+.card.is-exploding .card-inner,
+.card.is-revealed .card-inner {
+    animation: none !important; /* 永遠不呼吸 */
+    transform: translateY(0px) !important; 
+    scale: 1 !important;                   
+    transition: scale 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) !important; 
+}
+
+/* 🌟 5. 靈魂微動態：只有小 ICON (Badge) 獲得生命，絲滑上下呼吸 */
+.card.is-revealed .card-badge {
+    /* JS 的彈出動畫約在 1.5 秒結束。加上 1 秒等待 = 2.5s 延遲啟動！ */
+    /* 加上 backwards 確保在等待的這 2.5 秒內，它會乖乖鎖在原地絕對不跳動 */
+    animation: badgeSmoothBreathing 2.5s ease-in-out 2.5s infinite alternate backwards !important;
+}
+
+/* 【關鍵修正】放棄 bottom，改用獨立的 translate，避開 JS 的 transform 衝突，達到完全絲滑 */
+@keyframes badgeSmoothBreathing {
+    0% { translate: 0px 0px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    /* 🌟 將 -8px 改為 -3px，同時稍微收斂陰影擴散的範圍，讓它更貼合牌面 */
+    100% { translate: 0px -3px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+}
+
+/* ========================================= */
+/* 下方是你的專屬手指 Icon 與 光暈設定 */
+/* ========================================= */
+
+/* 🌟 全域基礎設定 (優先服務手機版：維持你最完美的「原地雙擊」節奏) */
+.card.card-selected:not(.is-revealed):not(.is-exploding)::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; right: -6px; 
+    width: 10px; height: 10px; 
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0; 
+    transform: translate(0px, 0px) rotate(-45deg); 
+    
+    /* 👉 關鍵修改：1.5秒淡入，2秒開始原地雙擊 */
+    animation: 
+        fingerFadeIn 0.5s forwards 1.5s, 
+        fingerDoubleTap 2s infinite 2s; 
+}
+
+/* 🌟 PC 電腦版專屬設定 (大於 1024px 才有 Hover 與兩段式引導) */
+@media (min-width: 1024px) {
+    
+    /* 1. 將「雙擊手指」預設隱藏，並設定離開 Hover 時快速消失 */
+    .card.card-selected:not(.is-revealed):not(.is-exploding)::after {
+        animation: none; 
+        opacity: 0;
+        transition: opacity 0.3s ease; 
+    }
+    
+    /* Hover 瞬間魔法：(第二階段維持你覺得不錯的節奏，不更動) */
+    .card.card-selected:not(.is-revealed):not(.is-exploding):hover::after {
+        opacity: 1 !important;
+        animation: fingerDoubleTap 2s infinite !important; 
+        transition: opacity 0.8s ease 1s !important; 
+    }
+
+    /* 2. 召喚另一隻「滑動手指」，負責【第一次進場】 */
+    .card.card-selected:not(.is-revealed):not(.is-exploding)::before {
+        content: '';
+        position: absolute;
+        bottom: -4px; right: -6px; 
+        width: 10px; height: 10px; 
+        background-image: url('https://myshaky.com/myimg/picks/p2-1.png'); 
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        z-index: 100;
+        pointer-events: none;
+        opacity: 0; 
+        transform: translate(6px, 6px) rotate(-45deg); 
+        
+        /* 👉 關鍵修改：同步改為 1.5秒淡入，2秒開始滑動引導 */
+        animation: 
+            fingerFadeIn 0.5s forwards 1.5s, 
+            fingerSlideGuidance 4.5s infinite 2s; 
+    }
+
+    /* 🌟 神級 Hack 第一步：Hover 瞬間砍掉整個元素 */
+    .card.card-selected:not(.is-revealed):not(.is-exploding):hover::before {
+        display: none !important; 
+    }
+
+    /* 🌟 神級 Hack 第二步：移開滑鼠後的記憶時間 (維持不變) */
+    .card.card-selected.has-hovered:not(.is-revealed):not(.is-exploding)::before {
+        animation: 
+            fingerFadeIn 0.6s forwards 0.8s, 
+            fingerSlideGuidance 4.5s infinite 0.8s !important; 
+    }
+}
+
+/* 共用淡入動畫 */
+@keyframes fingerFadeIn { to { opacity: 1; } }
+
+/* 原汁原味的圖片交換動畫 */
+@keyframes fingerDoubleTap {
+    0%, 15% { background-image: url('https://myshaky.com/myimg/picks/p2-1.png'); } 
+    16%, 25% { background-image: url('https://myshaky.com/myimg/picks/p2-3.png'); } 
+    26%, 35% { background-image: url('https://myshaky.com/myimg/picks/p2-1.png'); } 
+    36%, 45% { background-image: url('https://myshaky.com/myimg/picks/p2-3.png'); } 
+    46%, 100% { background-image: url('https://myshaky.com/myimg/picks/p2-1.png'); } 
+}
+
+/* PC 專屬滑動引導動畫 (🌟 溫柔優雅版：消除戳刺感，恢復滑順的水中阻力感) */
+@keyframes fingerSlideGuidance {
+    0% { transform: translate(6px, 6px) rotate(-45deg); }
+    12% { transform: translate(0px, 0px) rotate(-45deg); }  
+    14% { transform: translate(0px, 0px) rotate(-45deg); }  
+    24% { transform: translate(6px, 6px) rotate(-45deg); }   
+    36% { transform: translate(0px, 0px) rotate(-45deg); } 
+    38% { transform: translate(0px, 0px) rotate(-45deg); } 
+    48%, 100% { transform: translate(6px, 6px) rotate(-45deg); } 
+}
+
+/* 開獎後手指永遠消失 */
+.card.is-exploding::after, .card.is-revealed::after { display: none !important; }
+.card.is-exploding::before, .card.is-revealed::before { display: none !important; }
+
+
+/* ========================================= */
+/* 🌟 終極光影：東西落下、風向外震開的衝擊波 */
+/* ========================================= */
+
+/* 1. 小圖旋轉時拔除陰影，防止手機畫面髒亂 */
+.card.is-active:not(.card-selected) .card-inner,
+.card.is-active:not(.card-selected):hover .card-inner {
+    box-shadow: none !important;  
+}
+
+/* 2. 大圖等待期：給予穩定的高級陰影與白框 */
+.card.card-selected:not(.is-exploding):not(.is-revealed) .card-inner,
+.card.card-selected:not(.is-exploding):not(.is-revealed):hover .card-inner {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    border-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 3. 💥 核心特效：利用獨立的 ::before 創造「柔和圓潤的風散開」動畫 */
+.card.is-exploding::before,
+.card.is-revealed::before {
+    display: block !important; 
+    content: '';
+    position: absolute;
+    /* 將起始點往內縮一點，讓它在卡片中心成型 */
+    top: 10%; left: 10%;
+    width: 80%; height: 80%;
+    /* 👈 關鍵 1：變成橢圓形/圓形，徹底消除四方形的生硬感！ */
+    border-radius: 50%; 
+    z-index: -1; 
+    pointer-events: none;
+    background: transparent !important; 
+    
+    animation: dropShockwave 2s cubic-bezier(0.1, 0.8, 0.2, 1) forwards !important;
+}
+
+/* 👇 這就是那一行，放在這裡它會強制覆蓋之前所有亮度設定 */
+.card.is-exploding .card-inner img {
+    filter: brightness(1.05) saturate(1.1) !important;
+}
+
+/* 4. 開獎後：卡片本體回歸立體陰影 (這段不用動，維持原樣) */
+.card.is-revealed .card-inner {
+    box-shadow: 0 12px 30px rgba(0,0,0,0.22) !important; 
+    border-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 🌪️ 衝擊波動畫：調亮增強版 */
+@keyframes dropShockwave {
+    0% {
+        /* 增加顏色的 Alpha 值，從 0.9 提高到 1.0 (最亮核心) */
+        /* 增加陰影的強度，讓亮度更紮實 */
+        box-shadow:
+            0 0 0 0 rgba(255, 255, 255, 1.0),
+            0 0 25px 15px rgba(255, 255, 255, 0.9);
+        opacity: 1;
+    }
+    100% {
+        /* 擴散結束時，保持光芒的餘暉，讓它看起來更亮一點 */
+        box-shadow:
+            0 0 0 60px rgba(255, 255, 255, 0),
+            0 0 90px 40px rgba(255, 255, 255, 0.1);
+        opacity: 0;
+    }
+}
+
+/* =================================================== */
+/* 🌟 平板專屬防護罩 (431px ~ 1023px) - 終極緊湊版 */
+/* =================================================== */
+@media (min-width: 431px) and (max-width: 1023px) {
+    
+    /* 🎯 1. 內層間距收攏：把 LOGO 往下推，並讓下方選單往上靠攏 */
+    .main-title { 
+        font-size: 5vw !important; 
+        margin-top: 30px !important; /* 單獨把 LOGO 往下推，避開上方紙牌 */
+    }
+    .menu-area { margin-top: 10px !important; }  /* 把按鈕群往上拉，緊貼 LOGO */
+    /* .options-container { gap: 13px !important; }  縮小 LUCK/LOVE/CAREER 三個按鈕之間的縫隙 */
+    .options-container { top: 15px !important; } 
+    .split-container { gap: 15px !important; } /* 縮小左右間距 */
+    .active-category-label { font-size: 1.8rem !important; padding-right: 20px !important; min-width: auto !important; }
+    .option-btn { width: 150px !important; font-size: 12px !important; padding: 10px 0 !important; }
+    .start-btn { padding: 12px 30px !important; font-size: 13px !important; }
+
+    /* 🎯 2. 開獎選單收攏：讓上方的導覽列也更集中 */
+    .res-nav-row { gap: 15px !important; margin-bottom: 15px !important; }
+    .res-btn-group { gap: 10px !important; }
+
+    /* 🎯 3. 外圈小圖瘦身 */
+    .card { width: 38px !important; height: 50px !important; top: -25px !important; left: -19px !important; }
+
+    /* 🎯 4. 答案文字跟著上收：縮小回 90px，貼近大圖！ */
+    .res-text-container {
+        margin-top: 90px !important; 
+        padding-top: 0 !important;
+    }
+    
+    .res-card-placeholder { width: 180px !important; height: 180px !important; margin: 15px auto !important; }
+
+    /* 🎯 讓整個上方選單 (Logo與按鈕) 往下沉，向中心靠攏 */
+    .intro-overlay { top: 50% !important; }
+}
+
+/* ==========================================
+   Picks 專屬：沉浸式低調 Footer (Ghost Mode)
+   ========================================== */
+
+/* 1. 使用 absolute 和 bottom 把 Footer 牢牢釘在底部 */
+footer {
+    position: absolute;
+    bottom: 0;       /* 距離底部的安全距離 */
+    width: 100%;        /* 撐滿 100% 寬度以保證內部文字置中 */
+    z-index: 9999; 
+    pointer-events: auto;
+}
+
+/* 2. 降低透明度，讓它完美融入背景不搶戲 */
+footer .global-footer-container {
+    opacity: 0.35; 
+    transition: opacity 0.4s ease;
+}
+
+/* 3. UX 魔法：滑鼠靠近時才浮現，兼顧美感與功能 */
+/* 3. UX 魔法：滑鼠靠近時才浮現，兼顧美感與功能 */
+footer .global-footer-container:hover {
+    opacity: 1; 
+}
+
+/* ==========================================
+   RVCE CLUBS — Custom Discovery Platform Extensions
+   ========================================== */
+
+/* Gallery Container Visibility Control */
+.gallery-container {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.gallery-container.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Fullscreen Category Selection Panels */
+.category-panels-wrap {
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.cat-select-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    font-style: italic;
+    color: #1a202c;
+    margin: 0 0 4px 0;
+    text-align: center;
+}
+
+.cat-select-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: #4a5568;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.cat-panels-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .cat-panels-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+.cat-panel {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1.5px solid rgba(255, 255, 255, 0.85);
+    border-radius: 24px;
+    padding: 32px 28px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.cat-panel:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(255, 255, 255, 1);
+}
+
+.cat-panel-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.cat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-style: italic;
+    opacity: 0.3;
+    margin-bottom: 12px;
+}
+
+.cat-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+}
+
+.cat-tech-panel .cat-icon { color: #2B6CB0; }
+.cat-nontech-panel .cat-icon { color: #6B46C1; }
+
+.cat-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0 0 8px 0;
+    line-height: 1.2;
+}
+
+.cat-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    color: #4a5568;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.cat-badge-count {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.05);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #2d3748;
+    margin-bottom: 16px;
+    width: fit-content;
+}
+
+.cat-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: none;
+    background: #1a202c;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+    width: fit-content;
+}
+
+.cat-panel:hover .cat-action-btn {
+    background: #000000;
+    transform: translateX(4px);
+}
+
+/* Card inner image container fixes */
+.card-inner {
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 4px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+}
+
+.card-inner img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    transform: none !important;
+    filter: none !important;
+}
+
+.hero-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: #4a5568;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+}
+
+.hero-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-style: italic;
+    color: #2d3748;
+    margin-top: 0.25rem;
+    margin-bottom: 1.25rem;
+    opacity: 0;
+}
+
+.hero-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+}
+
+.stat-item strong {
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.stat-divider {
+    opacity: 0.4;
+}
+
+.btn-tech { background-color: #EBF8FF; border-color: #90CDF4; color: #2B6CB0; }
+.btn-nontech { background-color: #FAF5FF; border-color: #D6BCFA; color: #6B46C1; }
+.btn-all { background-color: #F0FFF4; border-color: #9AE6B4; color: #276749; }
+
+.btn-tech:hover { background-color: #BEE3F8; }
+.btn-nontech:hover { background-color: #E9D8FD; }
+.btn-all:hover { background-color: #C6F6D5; }
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 240px;
+    padding: 14px 20px;
+}
+
+.res-back-btn {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 30px;
+    padding: 6px 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    pointer-events: auto;
+    margin-left: 15px;
+}
+.res-back-btn:hover {
+    background: #1f1f1f;
+    color: #fff;
+}
+
+.res-text-container {
+    max-width: 720px;
+    width: 90%;
+    max-height: 55vh;
+    overflow-y: auto;
+    padding: 10px 20px 30px;
+    margin-top: 15px;
+    pointer-events: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
+
+.res-text-container::-webkit-scrollbar {
+    width: 5px;
+}
+.res-text-container::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+
+.club-detail-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.club-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0 0 5px 0;
+    line-height: 1.15;
+}
+
+.club-tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #4a5568;
+    margin: 0 0 12px 0;
+    font-style: italic;
+}
+
+.club-badges {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge-cat {
+    background: #e2e8f0;
+    color: #2d3748;
+}
+
+.badge-venue {
+    background: #feebc8;
+    color: #744210;
+}
+
+.club-section {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.section-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #2d3748;
+    border-bottom: 1.5px solid rgba(0,0,0,0.08);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.event-card {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    backdrop-filter: blur(6px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+    border-color: rgba(0,0,0,0.15);
+}
+
+.event-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 4px;
+}
+
+.event-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    color: #4a5568;
+    line-height: 1.45;
+}
+
+.club-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.gallery-img-thumb {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.25s ease, filter 0.25s ease;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.gallery-img-thumb:hover {
+    transform: scale(1.05);
+    filter: brightness(1.05);
+}
+
+.socials-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.social-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 30px;
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(0,0,0,0.12);
+    color: #2d3748;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.social-pill:hover {
+    background: #1f1f1f;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* ==========================================
+   MOBILE-FIRST RESPONSIVE OPTIMIZATIONS
+   ========================================== */
+
+@media (max-width: 768px) {
+    /* Container & Viewports */
+    .container {
+        padding: 0 10px;
+    }
+
+    /* Main Title & Hero */
+    .main-title {
+        font-size: clamp(2.4rem, 10vw, 3.6rem) !important;
+    }
+
+    .hero-eyebrow {
+        font-size: 0.72rem !important;
+        letter-spacing: 0.15em !important;
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .hero-stats {
+        font-size: 0.8rem !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .start-btn {
+        margin-top: 1.5rem !important;
+        padding: 12px 30px !important;
+        font-size: 12px !important;
+    }
+
+    /* Instruction Text on Mobile */
+    .instruction-text {
+        font-size: 0.8rem !important;
+        letter-spacing: 0.1em !important;
+        width: 90% !important;
+        top: 50% !important;
+    }
+
+    /* Cards on Mobile */
+    .card {
+        width: 52px !important;
+        height: 68px !important;
+        top: -34px !important;
+        left: -26px !important;
+    }
+
+
+    /* Category Panels on Mobile */
+    .category-panels-wrap {
+        padding: 0 10px;
+    }
+
+    .cat-select-title {
+        font-size: 2rem !important;
+    }
+
+    .cat-select-subtitle {
+        font-size: 0.85rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .cat-panels-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .cat-panel {
+        padding: 20px 18px !important;
+        border-radius: 18px !important;
+    }
+
+    .cat-name {
+        font-size: 1.4rem !important;
+    }
+
+    .cat-desc {
+        font-size: 0.82rem !important;
+        margin-bottom: 14px !important;
+    }
+
+    /* Fullscreen Club Detail Page on Mobile */
+    .result-layout {
+        padding: 20px 12px 40px !important;
+    }
+
+    .res-header {
+        margin-bottom: 8px !important;
+    }
+
+    .res-main-title {
+        font-size: 1.6rem !important;
+    }
+
+    .res-back-btn {
+        padding: 4px 14px !important;
+        font-size: 11px !important;
+    }
+
+    .res-card-placeholder {
+        width: 130px !important;
+        height: 130px !important;
+        margin: 5px auto 15px !important;
+    }
+
+    .club-title {
+        font-size: 1.6rem !important;
+        line-height: 1.25 !important;
+        margin-bottom: 6px !important;
+    }
+
+    .club-tagline {
+        font-size: 0.88rem !important;
+        line-height: 1.4 !important;
+        margin-bottom: 10px !important;
+    }
+
+    #club-description, .res-text, p.res-text {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.9rem !important;
+        line-height: 1.65 !important;
+        letter-spacing: normal !important;
+        color: #2d3748 !important;
+        margin-top: 8px !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    .event-card {
+        padding: 10px 14px !important;
+    }
+
+    .event-title {
+        font-size: 0.88rem !important;
+        line-height: 1.3 !important;
+    }
+
+    .club-gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)) !important;
+    }
+
+    .gallery-img-thumb {
+        height: 80px !important;
+    }
+}
+
+
+

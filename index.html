@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <link rel="icon" href="https://myshaky.com/img/metashaky.ico">
+    <title>RVCE Clubs — Find Your Community</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Archivo+Black&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="description" content="An interactive 3D discovery experience for RVCE clubs powered by MyShaky engine.">
+    <meta name="keywords" content="RVCE Clubs, RV College of Engineering, Technology Clubs, Non-Technical Clubs, Induction 2026, Club Explorer">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="RVCE Clubs — Find Your Community">
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="Explore and discover all student clubs at RV College of Engineering.">
+    
+    <!-- JS & Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/picks.css">
+    <link rel="stylesheet" href="css/lightbox.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <!-- Production Navigation Bar Header -->
+    <header class="app-header">
+        <div class="header-inner">
+            <a class="header-brand" href="index.html" id="header-brand-link">
+                <div class="brand-logo-wrap">
+                    <img src="assets/rvce-logo.png" alt="RVCE Logo" class="header-rvce-img" 
+                         onerror="this.onerror=null; this.src='assets/logos/rvce-logo.png'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='block';}" />
+                    <svg width="28" height="28" viewBox="0 0 100 100" fill="none" class="header-rvce-svg" style="display:none;">
+                        <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="#1a202c" stroke-width="4"/>
+                        <path d="M32 36 L50 22 L68 36 L68 64 L50 78 L32 64 Z" fill="#2B6CB0"/>
+                    </svg>
+                </div>
+                <span class="brand-title">RVCE CLUBS</span>
+            </a>
+
+            <div class="header-actions">
+                <!-- Sound Toggle Button -->
+                <button class="sound-toggle-btn" id="sound-toggle-btn" title="Toggle Sound">
+                    <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+                </button>
+
+                <!-- Search Button -->
+                <button class="search-trigger-btn" id="search-trigger-btn" title="Search Clubs">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+
+                <!-- Hamburger Button -->
+                <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle Navigation Menu">
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Drawer Overlay -->
+    <div class="nav-drawer-overlay" id="nav-drawer-overlay">
+        <div class="nav-drawer" id="nav-drawer">
+            <div class="drawer-header">
+                <div class="drawer-brand">
+                    <span class="drawer-title">RVCE CLUBS</span>
+                    <span class="drawer-subtitle">Induction 2026 Platform</span>
+                </div>
+                <button class="drawer-close-btn" id="drawer-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="drawer-nav-list">
+                <a class="drawer-link" href="#" id="menu-link-home"><i class="fa-solid fa-house"></i> Home Landing</a>
+                <a class="drawer-link" href="#" id="menu-link-tech"><i class="fa-solid fa-code"></i> Technology Clubs (14)</a>
+                <a class="drawer-link" href="#" id="menu-link-nontech"><i class="fa-solid fa-masks-theater"></i> Cultural & Non-Tech Clubs (16)</a>
+                <a class="drawer-link" href="#" id="menu-link-all"><i class="fa-solid fa-border-all"></i> All Clubs (30)</a>
+                <a class="drawer-link" href="#" id="menu-link-search"><i class="fa-solid fa-magnifying-glass"></i> Instant Search</a>
+            </div>
+
+            <div class="drawer-footer">
+                <p>© 2026 R.V. College of Engineering</p>
+                <p class="drawer-subtext">Induction 2026 Official Explorer</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instant Search Modal Overlay -->
+    <div class="search-modal-overlay" id="search-modal-overlay">
+        <div class="search-modal">
+            <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass search-input-icon"></i>
+                <input type="text" id="club-search-input" placeholder="Search 30 RVCE clubs (e.g. Coding, Racing, Quiz, AI)..." autocomplete="off" />
+                <button class="search-close-btn" id="search-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="search-results-list" id="search-results-list"></div>
+        </div>
+    </div>
+    
+    <!-- Ambient Glow Background Engine -->
+    <div class="ambient-glow-container">
+        <div class="glow-spinner">
+            <div class="glow-blob blob-blue"></div>
+            <div class="glow-blob blob-red"></div>
+            <div class="glow-blob blob-yellow"></div>
+            <div class="glow-blob blob-green"></div>
+        </div>
+    </div>
+
+    <!-- Floating Club Name Tooltip -->
+    <div class="hover-club-tooltip" id="hover-club-tooltip"></div>
+
+    <div class="container" id="app-container">
+        <nav></nav>
+
+        <!-- Intro Hero & Interactive Category Panels -->
+        <div class="intro-overlay" id="intro-overlay">
+            
+            <!-- STEP 1: HERO LANDING -->
+            <div class="hero-content-wrap" id="hero-content-wrap">
+                <p class="hero-eyebrow" id="hero-eyebrow">R.V. COLLEGE OF ENGINEERING · INDUCTION 2026</p>
+                <h1 class="main-title" id="main-title">RVCE CLUBS</h1>
+                <p class="hero-subtitle" id="hero-subtitle">Find Your Community</p>
+
+                <div class="hero-stats" id="hero-stats">
+                    <span class="stat-item"><strong id="stat-club-count">30</strong> Clubs</span>
+                    <span class="stat-divider">｜</span>
+                    <span class="stat-item">One Campus</span>
+                    <span class="stat-divider">｜</span>
+                    <span class="stat-item">Infinite Opportunities</span>
+                </div>
+
+                <button class="start-btn" id="start-btn">Begin Exploring</button>
+            </div>
+
+            <!-- STEP 2: FULLSCREEN CATEGORY SELECTION PANELS -->
+            <div class="category-panels-wrap" id="category-panels-wrap" style="display: none;">
+                <h2 class="cat-select-title" id="cat-select-title">Choose Category</h2>
+                <p class="cat-select-subtitle">Select a vertical to discover RVCE's student communities</p>
+                
+                <div class="cat-panels-grid">
+                    <div class="cat-panel cat-tech-panel" data-category="Technology">
+                        <div class="cat-panel-inner">
+                            <span class="cat-num">01</span>
+                            <span class="cat-icon"><i class="fa-solid fa-code"></i></span>
+                            <h3 class="cat-name">Technology Clubs</h3>
+                            <p class="cat-desc">Where code, circuits, Formula Student racing, and AI collide.</p>
+                            <span class="cat-badge-count" id="count-tech">Technology</span>
+                            <button class="cat-action-btn">Explore Tech Clubs <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="cat-panel cat-nontech-panel" data-category="Non-Technical">
+                        <div class="cat-panel-inner">
+                            <span class="cat-num">02</span>
+                            <span class="cat-icon"><i class="fa-solid fa-masks-theater"></i></span>
+                            <h3 class="cat-name">Non-Technical Clubs</h3>
+                            <p class="cat-desc">Where culture, entrepreneurship, music jams, and quizzing thrive.</p>
+                            <span class="cat-badge-count" id="count-nontech">Non-Technical</span>
+                            <button class="cat-action-btn">Explore Culture Clubs <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wheel Center RVCE Crest Emblem -->
+        <div class="wheel-center-logo" id="wheel-center-logo">
+            <img src="assets/rvce-logo.png" id="rvce-center-img" alt="RVCE Logo" loading="lazy" 
+                 onerror="handleRvceLogoError(this);" 
+                 style="width:76px; height:76px; object-fit:contain; border-radius:50%; background:#fff; padding:4px; box-shadow:0 6px 18px rgba(0,0,0,0.12);" />
+            <svg id="rvce-center-svg" width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;">
+                <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="#1a202c" stroke-width="2.5"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#2B6CB0" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <path d="M32 36 L50 22 L68 36 L68 64 L50 78 L32 64 Z" fill="#EBF8FF" stroke="#1a202c" stroke-width="2"/>
+                <text x="50" y="48" font-family="'Playfair Display', serif" font-weight="bold" font-size="17" fill="#1a202c" text-anchor="middle">RVCE</text>
+                <text x="50" y="62" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#2B6CB0" text-anchor="middle" letter-spacing="1">1963</text>
+            </svg>
+        </div>
+
+        <!-- Instruction Text Below Wheel -->
+        <div class="instruction-text" id="instruction-text">TAP A CLUB LOGO TO EXPLORE</div>
+
+        <!-- STEP 4: FULLSCREEN CLUB DETAIL PAGE -->
+        <div class="result-layout" id="result-layout">
+            <div class="res-header">
+                <h1 class="res-main-title">RVCE CLUBS</h1>
+                <button class="res-back-btn" id="res-back-btn"><i class="fa-solid fa-xmark"></i> Close</button>
+            </div>
+            
+            <div class="res-nav-row">
+                <button class="nav-arrow" id="prev-cat-btn">&#10094;</button>
+                <div class="res-category" id="res-category-label">TECHNOLOGY ｜</div>
+                <button class="nav-arrow" id="next-cat-btn">&#10095;</button>
+            </div>
+
+            <div class="res-card-placeholder" id="res-card-target"></div>
+            
+            <div class="res-text-container" id="res-text-container">
+                <div class="club-detail-header">
+                    <h2 class="club-title" id="club-title">Club Name</h2>
+                    <p class="club-tagline" id="club-tagline">Club Tagline</p>
+                    <div class="club-badges">
+                        <span class="badge badge-cat" id="club-category-badge">Technology</span>
+                        <span class="badge badge-venue" id="club-venue-badge"><i class="fa-solid fa-location-dot"></i> CS Block</span>
+                    </div>
+                </div>
+
+                <div class="club-section">
+                    <h3 class="section-title">About Club</h3>
+                    <p class="res-text" id="club-description">Club description will appear here...</p>
+                </div>
+
+                <div class="club-section" id="events-section">
+                    <h3 class="section-title"><i class="fa-solid fa-calendar-days"></i> Flagship Events & Activities</h3>
+                    <div class="events-grid" id="events-grid"></div>
+                </div>
+
+                <div class="club-section" id="gallery-section">
+                    <h3 class="section-title"><i class="fa-solid fa-camera"></i> Life at Club</h3>
+                    <div class="club-gallery-grid" id="club-gallery-grid"></div>
+                </div>
+
+                <div class="club-section">
+                    <h3 class="section-title"><i class="fa-solid fa-link"></i> Connect & Join</h3>
+                    <div class="socials-row" id="socials-row"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Floating Gallery Ring -->
+        <div class="gallery-container" id="gallery-container"><div class="gallery" id="gallery"></div></div>
+        <div class="title-container" id="title-container"></div>
+        
+        <footer></footer>
+    </div>
+
+    <!-- Application Core JS -->
+    <script src="js/picks-data.js"></script>
+    <script src="js/picks.js"></script>
+   
+    <!-- Auxiliary JS -->
+    <script src="js/legal-modal.js"></script>
+    <script type="text/javascript" src="js/lightbox.js"></script>
+    <script type="text/javascript" src="js/award-modal.js"></script>
+    <script type="text/javascript" src="js/footer.js"></script>
+</body>
+</html>
