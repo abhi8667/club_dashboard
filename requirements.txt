@@ -1,0 +1,14 @@
+# Python Requirements for RVCE Clubs Discovery Platform
+# Install dependencies using: pip install -r requirements.txt
+
+# Live reloading HTTP server for local development
+livereload>=2.6.3
+
+# Data processing & manipulation for clubs.csv
+pandas>=2.0.0
+
+# Image handling & optimization for club logos and gallery photos
+Pillow>=10.0.0
+
+# HTTP requests library for data/asset fetching
+requests>=2.31.0

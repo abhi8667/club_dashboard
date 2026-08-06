@@ -62,13 +62,24 @@ For any club (e.g., `gdg-rvce`):
 
 ## How to Run Locally
 
-### Method 1: Using Python (Recommended)
-Run the following command from the project root:
+### Method 1: Using Python & requirements.txt (Recommended)
 
-```bash
-python -m http.server 8080
-```
-Then open [http://localhost:8080](http://localhost:8080) in your browser.
+1. **Install Python dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Start the local server:**
+   ```bash
+   python server.py
+   ```
+   *Alternatively, using Python standard module:*
+   ```bash
+   python -m http.server 8080
+   ```
+
+3. Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ### Method 2: VS Code Live Server
 Right-click `index.html` in VS Code and select **Open with Live Server**.
+
