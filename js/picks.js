@@ -622,8 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
-
-    // 6. Select & Reveal Club Detail Page (Giant 3D Arc Zoom + Spin + Reveal)
+    // 6. Select & Reveal Club Detail Page (Giant 3D Arc Floating + Detail Box Below)
     function selectAndRevealClub(index, cardEl) {
         if (state.isAnimating) return;
         currentClubIndex = index;
@@ -649,14 +648,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 2. Zoom container WAY in & shift down vertically so cards form a giant arc across the screen!
-        const zoomScale = window.innerWidth < 768 ? 1.75 : 2.15;
-        const shiftY = window.innerWidth < 768 ? 80 : 120;
+        // 2. Zoom container WAY in so cards form a giant arc across the screen
+        const zoomScale = window.innerWidth < 768 ? 1.6 : 2.0;
+        const shiftY = window.innerWidth < 768 ? 40 : 60;
 
         gsap.to(galleryContainer, {
             scale: zoomScale,
             y: shiftY,
-            duration: 2.0,
+            duration: 1.8,
             ease: "power2.inOut"
         });
 
@@ -667,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ease: "power2.out"
         });
 
-        // 3. Spin the 3D wheel rapidly across 3 full revolutions to land on selected card
+        // 3. Spin 3D wheel to land on selected card
         const cardAngle = parseFloat(cardEl.dataset.angle);
         const currentRot = gsap.getProperty(gallery, "rotation") || 0;
         const extraSpins = 360 * 3;
@@ -676,12 +675,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         gsap.to(gallery, {
             rotation: finalRot,
-            duration: 2.0,
+            duration: 1.8,
             ease: "power3.inOut",
             onComplete: () => {
                 state.galleryRotationOffset = finalRot;
                 
-                // 4. Flip selected card back to front face with scale pop
+                // 4. Flip selected card back to front face with highlight pop
                 const selectedState = cardStates[index];
                 if (selectedState) {
                     selectedState.targetRotation = 0;
@@ -692,29 +691,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 gsap.to(cardEl, {
                     scale: 1.35,
-                    duration: 0.6,
+                    duration: 0.5,
                     ease: "back.out(2)",
                     onComplete: () => {
-                        // 5. Short pause to admire the zoomed-in selected card, then open Fullscreen Detail View!
-                        setTimeout(() => {
-                            populateClubDetail(club);
-                            
-                            resCardTarget.innerHTML = `<div class="card-inner" style="width:100%; height:100%; border-radius:12px; background:#fff; border:2px solid rgba(255,255,255,0.9); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.2); padding:6px;">${renderClubLogoImg(club, 'width:100%; height:100%; object-fit:contain;')}</div>`;
-
-                            resultLayout.style.display = 'flex';
-                            gsap.fromTo(resultLayout, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, visibility: 'visible', duration: 0.6, ease: "power2.out" });
-                            
-                            gsap.to(galleryContainer, { scale: 1, y: 0, duration: 0.5 });
-                            if (selectedState) selectedState.targetScale = 1.0;
-                            cardEl.classList.remove('card-selected', 'is-revealed');
-                            state.isAnimating = false;
-                        }, 400);
+                        // 5. Reveal Glassmorphic Detail Box directly underneath the floating 3D card!
+                        populateClubDetail(club);
+                        
+                        resultLayout.style.display = 'flex';
+                        gsap.fromTo(resultLayout, { opacity: 0, y: 30 }, { opacity: 1, y: 0, visibility: 'visible', duration: 0.6, ease: "power2.out" });
+                        state.isAnimating = false;
                     }
                 });
             }
         });
     }
-
 
     function populateClubDetail(club) {
         document.getElementById('res-category-label').textContent = `${club.category.toUpperCase()} ｜`;
@@ -771,7 +761,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentClubIndex = (currentClubIndex - 1 + filteredClubs.length) % filteredClubs.length;
             const club = filteredClubs[currentClubIndex];
             populateClubDetail(club);
-            resCardTarget.innerHTML = `<div class="card-inner" style="width:100%; height:100%; border-radius:12px; background:#fff; border:2px solid rgba(255,255,255,0.9); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.2); padding:6px;">${renderClubLogoImg(club, 'width:100%; height:100%; object-fit:contain;')}</div>`;
         });
     }
 
@@ -781,29 +770,36 @@ document.addEventListener('DOMContentLoaded', () => {
             currentClubIndex = (currentClubIndex + 1) % filteredClubs.length;
             const club = filteredClubs[currentClubIndex];
             populateClubDetail(club);
-            resCardTarget.innerHTML = `<div class="card-inner" style="width:100%; height:100%; border-radius:12px; background:#fff; border:2px solid rgba(255,255,255,0.9); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.2); padding:6px;">${renderClubLogoImg(club, 'width:100%; height:100%; object-fit:contain;')}</div>`;
         });
     }
 
     if (resBackBtn) {
         resBackBtn.addEventListener('click', () => {
             gsap.to(resultLayout, {
-                opacity: 0, duration: 0.4, ease: "power2.in",
+                opacity: 0, y: 20, duration: 0.4, ease: "power2.in",
                 onComplete: () => {
                     resultLayout.style.display = 'none';
                     instructionText.style.opacity = 1;
                     const wheelCenterLogo = document.getElementById('wheel-center-logo');
                     if (wheelCenterLogo) gsap.to(wheelCenterLogo, { opacity: 1, duration: 0.4 });
+                    
+                    // Reset 3D wheel zoom & shift back to explorer ring
+                    gsap.to(galleryContainer, { scale: 1, y: 0, duration: 0.6, ease: "power2.out" });
+                    
                     state.isRevealed = false;
                     state.isInteractionEnabled = true;
                     cards.forEach((c) => {
                         const s = cardStates[cards.indexOf(c)];
-                        if (s) s.targetRotation = 0;
+                        if (s) {
+                            s.targetRotation = 0;
+                            s.targetScale = 1.0;
+                        }
                     });
                 }
             });
         });
     }
+  }
 
     if (resMainTitle) {
         resMainTitle.addEventListener('click', () => {
